@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aptitude Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0e14;
+      --surface: #161b26;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --text: #f4f6fb;
+      --muted: #8b95a8;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #34d399;
+      --error: #f87171;
+      --glow: rgba(99, 102, 241, 0.35);
+    }
+
+    html, body {
+      min-height: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.08), transparent);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 32rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    .brand {
+      text-align: center;
+    }
+
+    .brand h1 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    #score {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+    }
+
+    #score .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 1.25rem;
+      padding: 2.5rem 2rem 2rem;
+      box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    #question {
+      font-size: clamp(1.75rem, 6vw, 2.25rem);
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+      letter-spacing: -0.02em;
+      min-height: 2.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .answer-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    #answer {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.1rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    #answer::-webkit-outer-spin-button,
+    #answer::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    #answer::placeholder {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    #answer:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
+
+    #submit {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.95rem 1.25rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+      box-shadow: 0 4px 14px var(--glow);
+    }
+
+    #submit:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 6px 20px var(--glow);
+    }
+
+    #submit:active {
+      transform: scale(0.98);
+    }
+
+    #feedback {
+      min-height: 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+      transition: opacity 0.2s;
+    }
+
+    #feedback.correct {
+      color: var(--success);
+    }
+
+    #feedback.wrong {
+      color: var(--error);
+    }
+
+    #feedback:empty {
+      visibility: hidden;
+    }
+
+    .results-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(12, 14, 20, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      opacity: 1;
+      transition: opacity 0.25s;
+    }
+
+    .results-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .results-card {
+      width: 100%;
+      max-width: 22rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 1.25rem;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    }
+
+    .results-card h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .results-score {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .results-score span {
+      color: var(--muted);
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .results-percent {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--success);
+      margin-bottom: 2rem;
+    }
+
+    #try-again {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.95rem 1.25rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+      box-shadow: 0 4px 14px var(--glow);
+    }
+
+    #try-again:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 6px 20px var(--glow);
+    }
+
+    #try-again:active {
+      transform: scale(0.98);
+    }
+
+    body.session-complete .answer-form,
+    body.session-complete #feedback {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div id="results-overlay" class="results-overlay hidden" aria-hidden="true">
+    <div class="results-card">
+      <h2>Session complete</h2>
+      <p class="results-score"><span id="results-correct">0</span> <span>/ 20</span></p>
+      <p class="results-percent" id="results-percent">0% correct</p>
+      <button type="button" id="try-again">Try Again</button>
+    </div>
+  </div>
+
+  <main class="app">
+    <header class="brand">
+      <h1>Aptitude Trainer</h1>
+      <p id="score"><span class="dot" aria-hidden="true"></span>Correct: 0 · Total: 0</p>
+    </header>
+
+    <section class="card">
+      <p id="question">Loading…</p>
+
+      <div class="answer-form">
+        <input type="number" id="answer" placeholder="Your answer" autocomplete="off" inputmode="numeric">
+        <button type="button" id="submit">Submit</button>
+      </div>
+
+      <p id="feedback" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script>
+    let correctAnswer = null;
+    let score = { correct: 0, total: 0 };
+    let attempts = 0;
+    const MAX_ATTEMPTS = 3;
+    const QUESTION_LIMIT = 20;
+    let advancing = false;
+    let sessionComplete = false;
+
+    const questionEl = document.getElementById('question');
+    const answerEl = document.getElementById('answer');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreEl = document.getElementById('score');
+    const resultsOverlay = document.getElementById('results-overlay');
+    const resultsCorrectEl = document.getElementById('results-correct');
+    const resultsPercentEl = document.getElementById('results-percent');
+
+    function updateScore() {
+      scoreEl.innerHTML =
+        `<span class="dot" aria-hidden="true"></span>Correct: ${score.correct} · Total: ${score.total}`;
+    }
+
+    function showResults() {
+      sessionComplete = true;
+      advancing = true;
+      const percent = Math.round((score.correct / QUESTION_LIMIT) * 100);
+      resultsCorrectEl.textContent = score.correct;
+      resultsPercentEl.textContent = `${percent}% correct`;
+      resultsOverlay.classList.remove('hidden');
+      resultsOverlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('session-complete');
+      answerEl.blur();
+    }
+
+    function tryAgain() {
+      sessionComplete = false;
+      score = { correct: 0, total: 0 };
+      resultsOverlay.classList.add('hidden');
+      resultsOverlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('session-complete');
+      updateScore();
+      loadQuestion();
+    }
+
+    function onQuestionComplete() {
+      updateScore();
+      if (score.total >= QUESTION_LIMIT) {
+        setTimeout(showResults, 500);
+      } else {
+        setTimeout(loadQuestion, 500);
+      }
+    }
+
+    async function loadQuestion() {
+      if (sessionComplete) return;
+      advancing = false;
+      attempts = 0;
+      feedbackEl.textContent = '';
+      feedbackEl.className = '';
+      answerEl.value = '';
+      answerEl.focus();
+      questionEl.textContent = '…';
+      const res = await fetch('/question');
+      const data = await res.json();
+      questionEl.textContent = data.question;
+      correctAnswer = data.answer;
+    }
+
+    async function checkAnswer() {
+      if (advancing || sessionComplete) return;
+      const userAnswer = answerEl.value.trim();
+      if (userAnswer === '') return;
+
+      const res = await fetch('/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_answer: userAnswer,
+          correct_answer: correctAnswer
+        })
+      });
+      const data = await res.json();
+      if (data.correct) {
+        advancing = true;
+        score.correct += 1;
+        score.total += 1;
+        feedbackEl.textContent = 'Correct!';
+        feedbackEl.className = 'correct';
+        onQuestionComplete();
+      } else {
+        attempts += 1;
+        feedbackEl.className = 'wrong';
+        if (attempts >= MAX_ATTEMPTS) {
+          advancing = true;
+          score.total += 1;
+          feedbackEl.textContent = 'Out of attempts!';
+          onQuestionComplete();
+        } else {
+          const remaining = MAX_ATTEMPTS - attempts;
+          feedbackEl.textContent =
+            `Incorrect, try again (${remaining} attempts remaining)`;
+        }
+      }
+    }
+
+    document.getElementById('submit').addEventListener('click', checkAnswer);
+    document.getElementById('try-again').addEventListener('click', tryAgain);
+    answerEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkAnswer();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
